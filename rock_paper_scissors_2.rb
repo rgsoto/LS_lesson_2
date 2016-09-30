@@ -1,22 +1,42 @@
-#VALID_CHOICES = %w(rock paper scissors lizzard spock)
-VALID_CHOICES = %w(r p s l sp)
+VALID_CHOICES = %w(rock paper scissors lizard spock)
+# VALID_CHOICES = %w(r p s l sp)
 
 def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
-def win?(first, second)
-  (first == 'r' && second == 's') ||
-    (first == 'p' && second == 'r') ||
-    (first == 's' && second == 'p') ||
-    (first == 'r' && second == 'l') ||
-    (first == 'l' && second == 'sp') ||
-    (first == 'sp' && second == 's') ||
-    (first == 's' && second == 'l') ||
-    (first == 'p' && second == 'sp') ||
-    (first == 'sp' && second == 'r')
-  end
+def rock_win?(first, second)
+  (first == 'rock' && second == 'scissors') ||
+    (first == 'rock' && second == 'lizard')
+end
 
+def paper_win?(first, second)
+  (first == 'paper' && second == 'rock') ||
+    (first == 'paper' && second == 'spock')
+end
+
+def scissors_win?(first, second)
+  (first == 'scissors' && second == 'paper') ||
+    (first == 'scissors' && second == 'lizard')
+end
+
+def spock_win?(first, second)
+  (first == 'spock' && second == 'rock') ||
+    (first == 'spock' && second == 'scissors')
+end
+
+def lizard_win?(first, second)
+  (first == 'lizard' && second == 'spock') ||
+    (first == 'lizard' && second == 'paper')
+end
+
+def win?(first, second)
+  rock_win?(first, second) ||
+    paper_win?(first, second) ||
+    scissors_win?(first, second) ||
+    lizard_win?(first, second) ||
+    spock_win?(first, second)
+end
 
 def display_results(player, computer)
   if win?(player, computer)
@@ -28,21 +48,36 @@ def display_results(player, computer)
   end
 end
 
-def score(player, computer)
-  if display_results(player) > 5
-    prompt "Here's your score"
-  elsif display_results(computer).count > 5
-    prompt "Computer score"
+choice = ''
+player_score = ''
+computer_score = ''
+
+def short_vesion_choice(word)
+  case word
+  when 'r' then 'rock'
+  when 'p' then 'paper'
+  when 's' then 'scissors'
+  when 'l' then 'lizard'
+  when 'sp' then 'spock'
   end
 end
 
+player_score = 0
+computer_score = 0
+round_tie_score = 0
 
 loop do
-  choice = ''
   loop do
-    prompt("Choose one: r for rock, p for paper, s for scissors, l for lizzard, and sp for spock!")
-    #prompt("Choose one: #{VALID_CHOICES.join(', ')}")
-    choice = Kernel.gets().chomp()
+    player_choice_prompt = <<-MSG
+      Choose one:
+        r for rock
+        p for paper
+        sc for scissors
+        l for lizard
+        sp for spock
+    MSG
+    prompt(player_choice_prompt)
+    choice = short_vesion_choice(gets.chomp)
 
     if VALID_CHOICES.include?(choice)
       break
@@ -55,12 +90,32 @@ loop do
 
   prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
 
-
   display_results(choice, computer_choice)
-  #score(choice, computer_choice)
+
+  if win?(choice, computer_choice)
+    player_score += 1
+  elsif win?(computer_choice, choice)
+    computer_score += 1
+  else
+    round_tie_score += 1
+  end
+
+  prompt("Your score is #{player_score}")
+  prompt("Computer score is #{computer_score}")
+  break if player_score + computer_score + round_tie_score == 5
   prompt("Do you want to play again?")
   answer = Kernel.gets().chomp()
   break unless answer.downcase().start_with?('y')
+end
+
+if player_score > computer_score
+  prompt("You won the game with #{player_score} in best of
+  #{player_score + computer_score + round_tie_score} rounds.")
+elsif computer_score > player_score
+  prompt("The computer won the game with #{computer_score} in best of
+    #{player_score + computer_score + round_tie_score} rounds.")
+else
+  prompt("The game was tied #{player_score} - #{computer_score}")
 end
 
 prompt("Thank you for playing, good bye")
